@@ -82,8 +82,7 @@ class InviteControllerTest {
         doThrow(TeamNotFoundException.class).when(inviteService).createInvite(teamId);
         mockMvc.perform(post("/api/team2/%s/invites".formatted(teamId))
                         .with(jwt()))
-                .andExpect(status().isNotFound())
-                .andExpect(status().reason("Team not found"));
+                .andExpect(status().isNotFound());
     }
 
     Authentication createAuthentication() {
