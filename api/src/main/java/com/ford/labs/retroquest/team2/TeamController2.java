@@ -44,19 +44,23 @@ public class TeamController2 {
         return ResponseEntity.ok().build();
     }
 
-    @ResponseStatus(value=HttpStatus.CONFLICT, reason="A team with that name already exists")
     @ExceptionHandler(TeamAlreadyExistsException.class)
-    public void handleTeamAlreadyExists() {}
+    public ResponseEntity<Void> handleTeamAlreadyExists() {
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
 
-    @ResponseStatus(value=HttpStatus.NOT_FOUND, reason="Team not found")
     @ExceptionHandler(TeamNotFoundException.class)
-    public void handleTeamNotFoundException() {}
+    public ResponseEntity<Void> handleTeamNotFoundException() {
+        return ResponseEntity.notFound().build();
+    }
 
-    @ResponseStatus(value= HttpStatus.NOT_FOUND, reason="Invite not found for team")
     @ExceptionHandler(InviteNotFoundException.class)
-    public void handleInviteNotFoundException() {}
+    public ResponseEntity<Void> handleInviteNotFoundException() {
+        return ResponseEntity.notFound().build();
+    }
 
-    @ResponseStatus(value=HttpStatus.BAD_REQUEST, reason="Invite expired")
     @ExceptionHandler(InviteExpiredException.class)
-    public void handleInviteExpiredException() {}
+    public ResponseEntity<Void> handleInviteExpiredException() {
+        return ResponseEntity.badRequest().build();
+    }
 }

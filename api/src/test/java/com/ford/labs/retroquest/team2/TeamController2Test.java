@@ -73,8 +73,7 @@ class TeamController2Test {
                         .with(jwt())
                         .content(objectMapper.writeValueAsString(new CreateTeamRequest(teamName)))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isConflict())
-                .andExpect(status().reason("A team with that name already exists"));
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -107,8 +106,7 @@ class TeamController2Test {
                         .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new AddUserToTeamRequest(inviteId))))
-                .andExpect(status().isNotFound())
-                .andExpect(status().reason("Team not found"));
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -120,8 +118,7 @@ class TeamController2Test {
                         .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new AddUserToTeamRequest(inviteId))))
-                .andExpect(status().isNotFound())
-                .andExpect(status().reason("Invite not found for team"));
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -133,7 +130,6 @@ class TeamController2Test {
                         .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new AddUserToTeamRequest(inviteId))))
-                .andExpect(status().isBadRequest())
-                .andExpect(status().reason("Invite expired"));
+                .andExpect(status().isBadRequest());
     }
 }
