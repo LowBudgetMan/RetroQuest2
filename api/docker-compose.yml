@@ -11,3 +11,11 @@ services:
       POSTGRES_DB: retroquest
     ports:
       - "5432:5432"
+  auth-server:
+    image: quay.io/keycloak/keycloak:22.0.0
+    environment:
+      KEYCLOAK_ADMIN: 'admin'
+      KEYCLOAK_ADMIN_PASSWORD: 'admin'
+    ports:
+      - '8010:8080'
+    command: start-dev
