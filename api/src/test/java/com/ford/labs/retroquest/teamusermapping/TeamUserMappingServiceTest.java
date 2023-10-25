@@ -1,6 +1,6 @@
 package com.ford.labs.retroquest.teamusermapping;
 
-import com.ford.labs.retroquest.teamusermapping.exception.TeamNotFoundException;
+import com.ford.labs.retroquest.team2.exception.TeamNotFoundException;
 import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ class TeamUserMappingServiceTest {
         var teamId = UUID.randomUUID();
         var userId = "User ID";
         when(mockRepository.save(new TeamUserMapping(null, teamId, userId, null)))
-                .thenThrow(new DataIntegrityViolationException("could not execute statement", new ConstraintViolationException("could not execute statement", null, "FK_TEAM_MAPPING")));
+                .thenThrow(new DataIntegrityViolationException("could not execute statement", new ConstraintViolationException("could not execute statement", null, "FK_TEAM_USER_MAPPING_TEAM")));
         assertThrows(TeamNotFoundException.class, () -> service.addUserToTeam(teamId, userId));
     }
 
