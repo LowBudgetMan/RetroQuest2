@@ -79,4 +79,12 @@ class TeamService2Test {
         service.addUser(teamId, "User ID", inviteId);
         verify(mockTeamUserMappingService).addUserToTeam(teamId, "User ID");
     }
+
+    @Test
+    void removeUser_CallsTeamUserMappingService() {
+        var teamId = UUID.randomUUID();
+        var userId = "User ID";
+        service.removeUser(teamId, userId);
+        verify(mockTeamUserMappingService).removeUserFromTeam(teamId, userId);
+    }
 }

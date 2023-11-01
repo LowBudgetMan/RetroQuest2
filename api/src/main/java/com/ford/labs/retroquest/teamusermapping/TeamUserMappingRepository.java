@@ -9,4 +9,5 @@ import java.util.UUID;
 @Repository
 public interface TeamUserMappingRepository extends JpaRepository<TeamUserMapping, UUID> {
     Optional<TeamUserMapping> findByTeamIdAndUserId(UUID teamId, String userId);
+    void deleteAllByTeamIdAndUserId(UUID teamId, String userId);
 }

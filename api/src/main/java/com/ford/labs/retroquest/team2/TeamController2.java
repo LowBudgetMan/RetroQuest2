@@ -6,6 +6,7 @@ import com.ford.labs.retroquest.team2.exception.TeamAlreadyExistsException;
 import com.ford.labs.retroquest.team2.exception.TeamNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -28,19 +29,16 @@ public class TeamController2 {
         return ResponseEntity.created(URI.create("/api/team/%s".formatted(team.getId()))).build();
     }
 
-    @GetMapping
-    public ResponseEntity getTeams() {
-        throw new UnsupportedOperationException();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity getTeam(@PathVariable("id") UUID teamId){
-        throw new UnsupportedOperationException();
-    }
-
     @PostMapping("/{id}/users")
     public ResponseEntity<Void> addUser(@PathVariable("id") UUID teamId, @RequestBody AddUserToTeamRequest request, Principal principal) {
         teamService.addUser(teamId, principal.getName(), request.inviteId());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}/users/{userId}")
+    @PreAuthorize("@teamUserAuthorizationService.isUserMemberOfTeam(authentication, #teamId)")
+    public ResponseEntity<Void> removeUser(@PathVariable("id") UUID teamId, @PathVariable("userId") String userId) {
+        teamService.removeUser(teamId, userId);
         return ResponseEntity.ok().build();
     }
 

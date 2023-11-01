@@ -58,4 +58,11 @@ class TeamUserMappingServiceTest {
         assertThrows(RuntimeException.class, () -> service.addUserToTeam(teamId, userId));
     }
 
+    @Test
+    void removeUserFromTeam() {
+        var teamId = UUID.randomUUID();
+        var userId = "User ID";
+        service.removeUserFromTeam(teamId, userId);
+        verify(mockRepository).deleteAllByTeamIdAndUserId(teamId, userId);
+    }
 }

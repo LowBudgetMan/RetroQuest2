@@ -5,6 +5,8 @@ import com.ford.labs.retroquest.team2.exception.InviteExpiredException;
 import com.ford.labs.retroquest.team2.exception.InviteNotFoundException;
 import com.ford.labs.retroquest.team2.exception.TeamAlreadyExistsException;
 import com.ford.labs.retroquest.team2.exception.TeamNotFoundException;
+import com.ford.labs.retroquest.teamusermapping.TeamUserAuthorizationService;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -12,15 +14,22 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -35,6 +44,9 @@ class TeamController2Test {
 
     @MockBean
     private TeamService2 service;
+
+    @MockBean
+    private TeamUserAuthorizationService authorizationService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -131,5 +143,61 @@ class TeamController2Test {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new AddUserToTeamRequest(inviteId))))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void removeUser_WhenUserIsOnTeam_Returns200AndRemovesUser() throws Exception{
+        var teamId = UUID.randomUUID();
+        var userToRemoveId = "user2";
+        var authentication = createAuthentication();
+        when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(true);
+
+        mockMvc.perform(delete("/api/team2/%s/users/%s".formatted(teamId.toString(), userToRemoveId))
+                .with(jwt()))
+            .andExpect(status().isOk());
+        verify(service).removeUser(teamId, userToRemoveId);
+    }
+
+    @Test
+    void removeUser_WithInvalidToken_Throws401() throws Exception{
+        var teamId = UUID.randomUUID();
+        var userToRemoveId = "user2";
+        mockMvc.perform(delete("/api/team2/%s/users/%s".formatted(teamId.toString(), userToRemoveId))
+                        .with(anonymous()))
+                .andExpect(status().isUnauthorized());
+        verify(service, never()).removeUser(teamId, userToRemoveId);
+    }
+
+    @Test
+    void removeUser_WhenUserIsNotOnTeam_Returns403() throws Exception{
+        var teamId = UUID.randomUUID();
+        var userToRemoveId = "user2";
+        var authentication = createAuthentication();
+        when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(false);
+
+        mockMvc.perform(delete("/api/team2/%s/users/%s".formatted(teamId.toString(), userToRemoveId))
+                        .with(jwt()))
+                .andExpect(status().isForbidden());
+        verify(service, never()).removeUser(teamId, userToRemoveId);
+    }
+
+    Authentication createAuthentication() {
+        var headers = new HashMap<String, Object>();
+        headers.put("alg", "none");
+        var claims = new HashMap<String, Object>();
+        claims.put("sub", "user");
+        claims.put("scope", "read");
+        var authorities = Lists.list(new SimpleGrantedAuthority("SCOPE_read"));
+        return new JwtAuthenticationToken(
+                new Jwt(
+                        "token",
+                        null,
+                        null,
+                        headers,
+                        claims
+                ),
+                authorities,
+                "user"
+        );
     }
 }

@@ -43,4 +43,8 @@ public class TeamService2 {
         }
         teamUserMappingService.addUserToTeam(teamId, userId);
     }
+
+    public void removeUser(UUID teamId, String userId) {
+        teamUserMappingService.removeUserFromTeam(teamId, userId);
+    }
 }

@@ -28,4 +28,8 @@ public class TeamUserMappingService {
             }
         }
     }
+
+    public void removeUserFromTeam(UUID teamId, String userId) {
+        this.repository.deleteAllByTeamIdAndUserId(teamId, userId);
+    }
 }

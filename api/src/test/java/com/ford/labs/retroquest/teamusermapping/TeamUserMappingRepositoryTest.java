@@ -69,4 +69,14 @@ class TeamUserMappingRepositoryTest {
         var actual = subject.findByTeamIdAndUserId(UUID.randomUUID(), "id");
         assertThat(actual).isNotPresent();
     }
+
+    @Test
+    void deleteAllByTeamIdAndUserId_WhenMappingExists_RemovesMapping() {
+        subject.saveAndFlush(new TeamUserMapping(null, savedTeam.getId(), "id", null));
+        subject.saveAndFlush(new TeamUserMapping(null, savedTeam.getId(), "id2", null));
+        subject.deleteAllByTeamIdAndUserId(savedTeam.getId(), "id");
+        var actual = subject.findAll();
+        assertThat(actual.size()).isEqualTo(1);
+        assertThat(actual.get(0).getUserId()).isEqualTo("id2");
+    }
 }
