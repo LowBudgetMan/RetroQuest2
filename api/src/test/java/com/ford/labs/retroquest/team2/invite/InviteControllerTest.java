@@ -20,10 +20,10 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.UUID;
 
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -83,6 +83,36 @@ class InviteControllerTest {
         mockMvc.perform(post("/api/team2/%s/invites".formatted(teamId))
                         .with(jwt()))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteInvite_WhenSuccessful_Returns200() throws Exception {
+        var teamId = UUID.randomUUID();
+        var inviteId = UUID.randomUUID();
+        var authentication = createAuthentication();
+        when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(true);
+        when(inviteService.createInvite(teamId)).thenReturn(new Invite(inviteId, teamId, LocalDateTime.now()));
+        mockMvc.perform(delete("/api/team2/%s/invites/%s".formatted(teamId.toString(), inviteId.toString()))
+                        .with(jwt()))
+                .andExpect(status().isOk());
+        verify(inviteService).deleteInvite(inviteId);
+    }
+
+    @Test
+    void deleteInvite_WithInvalidToken_Throws401() throws Exception{
+        mockMvc.perform(delete("/api/team2/%s/invites/%s".formatted(UUID.randomUUID(), UUID.randomUUID()))
+                        .with(anonymous()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void deleteInvite_WhenUserNotOnTeam_Throws403() throws Exception {
+        UUID teamId = UUID.randomUUID();
+        var authentication = createAuthentication();
+        when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(false);
+        mockMvc.perform(delete("/api/team2/%s/invites/%s".formatted(teamId, UUID.randomUUID()))
+                        .with(jwt()))
+                .andExpect(status().isForbidden());
     }
 
     Authentication createAuthentication() {

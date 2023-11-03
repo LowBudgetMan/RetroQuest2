@@ -27,4 +27,8 @@ public class InviteService {
     public Optional<Invite> getInvite(UUID teamId, UUID inviteId) {
         return inviteRepository.findByIdAndTeamId(inviteId, teamId);
     }
+
+    public void deleteInvite(UUID inviteId) {
+        inviteRepository.deleteById(inviteId);
+    }
 }

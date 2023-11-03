@@ -11,8 +11,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class InviteServiceTest {
     private final InviteRepository mockInviteRepository = mock(InviteRepository.class);
@@ -48,5 +47,12 @@ class InviteServiceTest {
         var expectedInvite = Optional.of(new Invite(inviteId, teamId, LocalDateTime.now()));
         when(mockInviteRepository.findByIdAndTeamId(inviteId, teamId)).thenReturn(expectedInvite);
         assertThat(inviteService.getInvite(teamId, inviteId)).isEqualTo(expectedInvite);
+    }
+
+    @Test
+    void deleteInvite_DeletesInviteFromRepo() {
+        var inviteId = UUID.randomUUID();
+        inviteService.deleteInvite(inviteId);
+        verify(mockInviteRepository).deleteById(inviteId);
     }
 }
