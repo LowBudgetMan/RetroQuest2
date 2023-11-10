@@ -29,6 +29,13 @@ public class TeamController2 {
         return ResponseEntity.created(URI.create("/api/team/%s".formatted(team.getId()))).build();
     }
 
+    @GetMapping("{id}")
+    @PreAuthorize("@teamUserAuthorizationService.isUserMemberOfTeam(authentication, #teamId)")
+    public ResponseEntity<Team> getTeam(@PathVariable("id") UUID teamId) {
+        var possibleTeam = teamService.getTeam(teamId);
+        return possibleTeam.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @PostMapping("/{id}/users")
     public ResponseEntity<Void> addUser(@PathVariable("id") UUID teamId, @RequestBody AddUserToTeamRequest request, Principal principal) {
         teamService.addUser(teamId, principal.getName(), request.inviteId());

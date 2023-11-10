@@ -48,6 +48,17 @@ class TeamService2Test {
     }
 
     @Test
+    void getTeam_ReturnsOptionalFromRepository() {
+        var teamId = UUID.randomUUID();
+        var expected = Optional.of(new Team(teamId, "Team Name", LocalDateTime.now()));
+        when(mockTeamRepository.findById(teamId)).thenReturn(expected);
+
+        var actual = service.getTeam(teamId);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
     void addUser_WhenInviteDoesNotExistForTeam_ThrowsInviteNotFoundException() {
         var teamId = UUID.randomUUID();
         var inviteId = UUID.randomUUID();

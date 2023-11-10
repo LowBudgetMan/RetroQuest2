@@ -9,6 +9,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -31,6 +32,10 @@ public class TeamService2 {
         } catch (DataIntegrityViolationException exception) {
             throw new TeamAlreadyExistsException();
         }
+    }
+
+    public Optional<Team> getTeam(UUID teamId) {
+        return repository.findById(teamId);
     }
 
     public void addUser(UUID teamId, String userId, UUID inviteId) {

@@ -24,15 +24,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @AutoConfigureMockMvc
@@ -86,6 +85,50 @@ class TeamController2Test {
                         .content(objectMapper.writeValueAsString(new CreateTeamRequest(teamName)))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void getTeam_returnsTeam() throws Exception {
+        var teamId = UUID.randomUUID();
+        var team = new Team(teamId, "Team name", LocalDateTime.now());
+        var authentication = createAuthentication();
+        when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(true);
+        when(service.getTeam(teamId)).thenReturn(Optional.of(team));
+        mockMvc.perform(get("/api/team2/%s".formatted(teamId))
+                .with(jwt()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(teamId.toString()))
+            .andExpect(jsonPath("$.name").value(team.getName()))
+            .andExpect(jsonPath("$.createdAt").value(team.getCreatedAt().toString()));
+    }
+
+    @Test
+    void getTeam_WhenInvalidToken_Returns401() throws Exception{
+        mockMvc.perform(get("/api/team2/%s".formatted(UUID.randomUUID()))
+                    .with(SecurityMockMvcRequestPostProcessors.anonymous()))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getTeam_WhenUserNotOnTeam_Returns403() throws Exception {
+        var teamId = UUID.randomUUID();
+        var authentication = createAuthentication();
+        when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(false);
+        mockMvc.perform(get("/api/team2/%s".formatted(teamId))
+                .with(jwt()))
+            .andExpect(status().isForbidden());
+
+    }
+
+    @Test
+    void getTeam_WhenTeamDoesNotExist_Returns404() throws Exception {
+        var teamId = UUID.randomUUID();
+        var authentication = createAuthentication();
+        when(service.getTeam(teamId)).thenReturn(Optional.empty());
+        when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(true);
+        mockMvc.perform(get("/api/team2/%s".formatted(teamId))
+                    .with(jwt()))
+            .andExpect(status().isNotFound());
     }
 
     @Test
