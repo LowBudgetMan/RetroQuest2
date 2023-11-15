@@ -42,7 +42,7 @@ public class Column implements Serializable, Comparable<Column> {
     private String title;
 
     @NaturalId
-    private String teamId; //TODO: Change this to a UUID
+    private String teamId;
 
     @Override
     public int compareTo(Column o) {

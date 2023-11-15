@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -83,7 +84,7 @@ class ColumnServiceTest {
         var expected = new Column(42L, "topic", "title", "teamId");
         when(columnRepository.findByTeamIdAndId("teamId", 42L)).thenReturn(Optional.of(expected));
         var actual = service.fetchColumn("teamId", 42L);
-        assertThat(actual).usingRecursiveComparison().isEqualTo(actual);
+        assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
     }
 
     @Test
@@ -91,5 +92,17 @@ class ColumnServiceTest {
         assertThatThrownBy(() ->
                 service.fetchColumn("some team id", 42L)
         ).isInstanceOf(ColumnNotFoundException.class);
+    }
+
+    @Test
+    void generateInitialColumnsForTeam_createsHappyMehAndSadColumnWithTeamId() {
+        var teamId = UUID.randomUUID();
+        var expectedHappyColumn = new Column(null, "happy", "Happy", teamId.toString());
+        var expectedConfusedColumn = new Column(null, "confused", "Confused", teamId.toString());
+        var expectedSadColumn = new Column(null, "unhappy", "Sad", teamId.toString());
+        service.generateInitialColumnsForTeam(teamId);
+        verify(columnRepository).save(expectedHappyColumn);
+        verify(columnRepository).save(expectedConfusedColumn);
+        verify(columnRepository).save(expectedSadColumn);
     }
 }

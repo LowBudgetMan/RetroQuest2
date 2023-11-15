@@ -17,36 +17,19 @@
 
 package com.ford.labs.retroquest.team;
 
-import com.ford.labs.retroquest.actionitem.ActionItemRepository;
-import com.ford.labs.retroquest.column.Column;
-import com.ford.labs.retroquest.column.ColumnRepository;
 import com.ford.labs.retroquest.exception.TeamDoesNotExistException;
-import com.ford.labs.retroquest.thought.ThoughtRepository;
-import com.ford.labs.retroquest.websocket.WebsocketService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TeamService {
-    private final ThoughtRepository thoughtRepository;
-    private final ActionItemRepository actionItemRepository;
     private final TeamRepository teamRepository;
     private final PasswordEncoder passwordEncoder;
-    private final ColumnRepository columnRepository;
 
-    public TeamService(
-        ThoughtRepository thoughtRepository,
-        ActionItemRepository actionItemRepository,
-        TeamRepository teamRepository,
-        PasswordEncoder passwordEncoder,
-        ColumnRepository columnRepository
-    ) {
-        this.thoughtRepository = thoughtRepository;
-        this.actionItemRepository = actionItemRepository;
+    public TeamService(TeamRepository teamRepository, PasswordEncoder passwordEncoder) {
         this.teamRepository = teamRepository;
         this.passwordEncoder = passwordEncoder;
-        this.columnRepository = columnRepository;
     }
 
     public Team getTeamByName(String teamName) {
@@ -84,18 +67,6 @@ public class TeamService {
                 encryptedPassword
         );
         team = teamRepository.save(team);
-        generateColumns(team);
-
         return team;
-    }
-
-    public void generateColumns(Team team) {
-        var happyColumn = new Column(null, "happy", "Happy", team.getUri());
-        var confusedColumn = new Column(null, "confused", "Confused", team.getUri());
-        var unhappyColumn = new Column(null, "unhappy", "Sad", team.getUri());
-
-        columnRepository.save(happyColumn);
-        columnRepository.save(confusedColumn);
-        columnRepository.save(unhappyColumn);
     }
 }

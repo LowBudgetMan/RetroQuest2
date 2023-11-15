@@ -25,6 +25,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ColumnService {
@@ -58,5 +59,15 @@ public class ColumnService {
 
     public Column fetchColumn(String teamId, Long columnId) {
         return columnRepository.findByTeamIdAndId(teamId, columnId).orElseThrow(ColumnNotFoundException::new);
+    }
+
+    public void generateInitialColumnsForTeam(UUID teamId) {
+        var happyColumn = new Column(null, "happy", "Happy", teamId.toString());
+        var confusedColumn = new Column(null, "confused", "Confused", teamId.toString());
+        var unhappyColumn = new Column(null, "unhappy", "Sad", teamId.toString());
+
+        columnRepository.save(happyColumn);
+        columnRepository.save(confusedColumn);
+        columnRepository.save(unhappyColumn);
     }
 }

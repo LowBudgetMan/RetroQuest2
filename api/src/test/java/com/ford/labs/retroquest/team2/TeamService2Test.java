@@ -1,5 +1,6 @@
 package com.ford.labs.retroquest.team2;
 
+import com.ford.labs.retroquest.column.ColumnService;
 import com.ford.labs.retroquest.team2.exception.InviteExpiredException;
 import com.ford.labs.retroquest.team2.exception.InviteNotFoundException;
 import com.ford.labs.retroquest.team2.exception.TeamAlreadyExistsException;
@@ -22,7 +23,8 @@ class TeamService2Test {
     private final TeamRepository2 mockTeamRepository = mock(TeamRepository2.class);
     private final TeamUserMappingService mockTeamUserMappingService = mock(TeamUserMappingService.class);
     private final InviteService mockInviteService = mock(InviteService.class);
-    private final TeamService2 service = new TeamService2(mockTeamRepository, mockTeamUserMappingService, mockInviteService);
+    private final ColumnService mockColumnService = mock(ColumnService.class);
+    private final TeamService2 service = new TeamService2(mockTeamRepository, mockTeamUserMappingService, mockInviteService, mockColumnService);
 
     @Test
     void createTeam_ShouldReturnCreatedTeam() {
@@ -45,6 +47,14 @@ class TeamService2Test {
         var actual = service.createTeam("expected team name", "User ID");
         assertThat(actual).isEqualTo(expected);
         verify(mockTeamUserMappingService).addUserToTeam(actual.getId(), "User ID");
+    }
+
+    @Test
+    void createTeam_GeneratesInitialColumns() {
+        var expectedTeam = new Team(UUID.randomUUID(), "expected team name", LocalDateTime.now());
+        when(mockTeamRepository.save(new Team(null, "expected team name", null))).thenReturn(expectedTeam);
+        service.createTeam("expected team name", "User ID");
+        verify(mockColumnService).generateInitialColumnsForTeam(expectedTeam.getId());
     }
 
     @Test
