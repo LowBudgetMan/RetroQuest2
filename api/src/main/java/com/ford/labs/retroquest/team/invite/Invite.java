@@ -1,4 +1,4 @@
-package com.ford.labs.retroquest.team2.invite;
+package com.ford.labs.retroquest.team.invite;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

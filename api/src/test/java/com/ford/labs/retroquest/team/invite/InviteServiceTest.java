@@ -1,6 +1,6 @@
-package com.ford.labs.retroquest.team2.invite;
+package com.ford.labs.retroquest.team.invite;
 
-import com.ford.labs.retroquest.team2.exception.TeamNotFoundException;
+import com.ford.labs.retroquest.team.exception.TeamNotFoundException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;

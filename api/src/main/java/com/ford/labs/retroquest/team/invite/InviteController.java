@@ -1,6 +1,6 @@
-package com.ford.labs.retroquest.team2.invite;
+package com.ford.labs.retroquest.team.invite;
 
-import com.ford.labs.retroquest.team2.exception.TeamNotFoundException;
+import com.ford.labs.retroquest.team.exception.TeamNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;

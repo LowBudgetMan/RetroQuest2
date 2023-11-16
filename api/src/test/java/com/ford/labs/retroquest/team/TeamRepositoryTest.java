@@ -1,4 +1,4 @@
-package com.ford.labs.retroquest.team2;
+package com.ford.labs.retroquest.team;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +10,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @DataJpaTest
-class TeamRepository2Test {
+class TeamRepositoryTest {
 
     @Autowired
-    private TeamRepository2 subject;
+    private TeamRepository subject;
 
     @Autowired
     private TestEntityManager entityManager;

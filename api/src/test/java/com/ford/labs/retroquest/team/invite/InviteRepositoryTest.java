@@ -1,7 +1,7 @@
-package com.ford.labs.retroquest.team2.invite;
+package com.ford.labs.retroquest.team.invite;
 
-import com.ford.labs.retroquest.team2.Team;
-import com.ford.labs.retroquest.team2.TeamRepository2;
+import com.ford.labs.retroquest.team.Team;
+import com.ford.labs.retroquest.team.TeamRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -19,11 +19,11 @@ class InviteRepositoryTest {
     private InviteRepository subject;
 
     @Autowired
-    private TeamRepository2 teamRepository2;
+    private TeamRepository teamRepository;
 
     @Test
     void save_AutoGeneratesIdAndCreationTimestamp() {
-        var savedTeam = teamRepository2.saveAndFlush(new Team(null, "team name", null));
+        var savedTeam = teamRepository.saveAndFlush(new Team(null, "team name", null));
 
         var actual = subject.saveAndFlush(new Invite(null, savedTeam.getId(), null));
 
@@ -39,20 +39,20 @@ class InviteRepositoryTest {
 
     @Test
     void findByIdAndTeamId_WhenTeamIdNotOnInviteWithId_ReturnsEmptyOptional() {
-        var team = teamRepository2.saveAndFlush(new Team(null, "Team 1", null));
+        var team = teamRepository.saveAndFlush(new Team(null, "Team 1", null));
         var invite = subject.saveAndFlush(new Invite(null, team.getId(), null));
         assertThat(subject.findByIdAndTeamId(invite.getId(), UUID.randomUUID())).isNotPresent();
     }
 
     @Test
     void findByIdAndTeamId_WhenInviteDoesNotExist_ReturnsEmptyOptional() {
-        var team = teamRepository2.saveAndFlush(new Team(null, "Team 1", null));
+        var team = teamRepository.saveAndFlush(new Team(null, "Team 1", null));
         assertThat(subject.findByIdAndTeamId(UUID.randomUUID(), team.getId())).isNotPresent();
     }
 
     @Test
     void findByIdAndTeamId_WhenInviteHasTeamId_ReturnsInvite() {
-        var team = teamRepository2.saveAndFlush(new Team(null, "Team 1", null));
+        var team = teamRepository.saveAndFlush(new Team(null, "Team 1", null));
         var invite = subject.saveAndFlush(new Invite(null, team.getId(), null));
         assertThat(subject.findByIdAndTeamId(invite.getId(), team.getId())).isPresent();
     }

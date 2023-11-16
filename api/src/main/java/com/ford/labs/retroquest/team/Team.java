@@ -1,70 +1,32 @@
-/*
- * Copyright (c) 2021 Ford Motor Company
- * All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ford.labs.retroquest.team;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.domain.Persistable;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
-@Data
-@Entity
+@Getter
+@Entity(name="team2")
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
-public class Team implements Persistable<String> {
+@EqualsAndHashCode
+public class Team {
 
     @Id
-    @JsonIgnore
-    private String uri;
-
+    @GeneratedValue
+    private UUID id;
     private String name;
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 
-    @JsonIgnore
-    private String password;
-
-    @JsonIgnore
-    @Builder.Default
-    private LocalDate dateCreated = LocalDate.now();
-
-    @JsonIgnore
-    private LocalDate lastLoginDate;
-
-    public Team(String uri, String name, String password) {
-        this.uri = uri;
+    public Team(String name) {
         this.name = name;
-        this.password = password;
-        this.dateCreated = LocalDate.now();
-    }
-
-    @Override
-    public String getId() {
-        return this.uri;
-    }
-
-    @Override
-    public boolean isNew() {
-        return uri == null;
     }
 }

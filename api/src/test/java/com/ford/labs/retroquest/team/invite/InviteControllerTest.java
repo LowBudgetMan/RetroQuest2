@@ -1,6 +1,6 @@
-package com.ford.labs.retroquest.team2.invite;
+package com.ford.labs.retroquest.team.invite;
 
-import com.ford.labs.retroquest.team2.exception.TeamNotFoundException;
+import com.ford.labs.retroquest.team.exception.TeamNotFoundException;
 import com.ford.labs.retroquest.teamusermapping.TeamUserAuthorizationService;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;

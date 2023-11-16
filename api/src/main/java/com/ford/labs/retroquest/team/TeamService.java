@@ -1,72 +1,59 @@
-/*
- * Copyright (c) 2022 Ford Motor Company
- * All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ford.labs.retroquest.team;
 
-import com.ford.labs.retroquest.exception.TeamDoesNotExistException;
+import com.ford.labs.retroquest.column.ColumnService;
+import com.ford.labs.retroquest.team.exception.InviteExpiredException;
+import com.ford.labs.retroquest.team.exception.InviteNotFoundException;
+import com.ford.labs.retroquest.team.exception.TeamAlreadyExistsException;
+import com.ford.labs.retroquest.team.invite.InviteService;
+import com.ford.labs.retroquest.teamusermapping.TeamUserMappingService;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class TeamService {
-    private final TeamRepository teamRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public TeamService(TeamRepository teamRepository, PasswordEncoder passwordEncoder) {
-        this.teamRepository = teamRepository;
-        this.passwordEncoder = passwordEncoder;
+    private final TeamRepository repository;
+    private final TeamUserMappingService teamUserMappingService;
+    private final InviteService inviteService;
+    private final ColumnService columnService;
+
+    public TeamService(TeamRepository repository, TeamUserMappingService teamUserMappingService, InviteService inviteService, ColumnService columnService) {
+        this.repository = repository;
+        this.teamUserMappingService = teamUserMappingService;
+        this.inviteService = inviteService;
+        this.columnService = columnService;
+    }
+    public Team createTeam(String teamName, String userId) throws TeamAlreadyExistsException {
+        try {
+            var savedTeam = repository.save(new Team(teamName));
+            teamUserMappingService.addUserToTeam(savedTeam.getId(), userId);
+            columnService.generateInitialColumnsForTeam(savedTeam.getId());
+            return savedTeam;
+        } catch (DataIntegrityViolationException exception) {
+            throw new TeamAlreadyExistsException();
+        }
     }
 
-    public Team getTeamByName(String teamName) {
-        return teamRepository.findTeamByNameIgnoreCase(teamName.trim())
-            .orElseThrow(TeamDoesNotExistException::new);
+    public Optional<Team> getTeam(UUID teamId) {
+        return repository.findById(teamId);
     }
 
-    public Team getTeamByUri(String teamUri) {
-        return teamRepository.findTeamByUri(teamUri.toLowerCase())
-            .orElseThrow(TeamDoesNotExistException::new);
+    public void addUser(UUID teamId, String userId, UUID inviteId) {
+        var invite = inviteService.getInvite(teamId, inviteId);
+        if(invite.isEmpty()) {
+            throw new InviteNotFoundException();
+        }
+        if(invite.get().getCreatedAt().plusHours(3).isBefore(LocalDateTime.now())) {
+            throw new InviteExpiredException();
+        }
+        teamUserMappingService.addUserToTeam(teamId, userId);
     }
 
-    public String convertTeamNameToURI(String teamName) {
-        return teamName.toLowerCase().replace(" ", "-");
-    }
-
-    public String encodePassword(String password) {
-        return passwordEncoder.encode(password);
-    }
-
-    public Team createNewTeam(CreateTeamRequest createTeamRequest) {
-        var encryptedPassword = this.encodePassword(createTeamRequest.getPassword());
-
-        var trimmedName = createTeamRequest.getName().trim();
-        var uri = convertTeamNameToURI(trimmedName);
-        teamRepository
-            .findTeamByUri(uri)
-            .ifPresent(s -> {
-                throw new DataIntegrityViolationException(s.getUri());
-            });
-
-        var team = new Team(
-                uri,
-                trimmedName,
-                encryptedPassword
-        );
-        team = teamRepository.save(team);
-        return team;
+    public void removeUser(UUID teamId, String userId) {
+        teamUserMappingService.removeUserFromTeam(teamId, userId);
     }
 }

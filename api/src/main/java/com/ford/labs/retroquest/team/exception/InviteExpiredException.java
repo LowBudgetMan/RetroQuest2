@@ -1,4 +1,4 @@
-package com.ford.labs.retroquest.team2.exception;
+package com.ford.labs.retroquest.team.exception;
 
 public class InviteExpiredException extends RuntimeException{
 }

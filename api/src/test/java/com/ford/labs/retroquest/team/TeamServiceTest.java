@@ -1,167 +1,111 @@
-/*
- * Copyright (c) 2021 Ford Motor Company
- * All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ford.labs.retroquest.team;
 
-import com.ford.labs.retroquest.column.Column;
-import com.ford.labs.retroquest.column.ColumnRepository;
-import com.ford.labs.retroquest.exception.TeamDoesNotExistException;
-import com.ford.labs.retroquest.websocket.WebsocketService;
+import com.ford.labs.retroquest.column.ColumnService;
+import com.ford.labs.retroquest.team.exception.InviteExpiredException;
+import com.ford.labs.retroquest.team.exception.InviteNotFoundException;
+import com.ford.labs.retroquest.team.exception.TeamAlreadyExistsException;
+import com.ford.labs.retroquest.team.invite.Invite;
+import com.ford.labs.retroquest.team.invite.InviteService;
+import com.ford.labs.retroquest.teamusermapping.TeamUserMappingService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.dao.DataIntegrityViolationException;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.AdditionalAnswers.returnsFirstArg;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class TeamServiceTest {
-
-    @Mock
-    private TeamRepository teamRepository;
-
-    @Mock
-    private ColumnRepository columnRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @InjectMocks
-    private TeamService teamService;
-
-    @Mock
-    private WebsocketService websocketService;
+    private final TeamRepository mockTeamRepository = mock(TeamRepository.class);
+    private final TeamUserMappingService mockTeamUserMappingService = mock(TeamUserMappingService.class);
+    private final InviteService mockInviteService = mock(InviteService.class);
+    private final ColumnService mockColumnService = mock(ColumnService.class);
+    private final TeamService service = new TeamService(mockTeamRepository, mockTeamUserMappingService, mockInviteService, mockColumnService);
 
     @Test
-    void convertValidTeamNameToURI() {
-        assertEquals("ford-labs", teamService.convertTeamNameToURI("Ford Labs"));
+    void createTeam_ShouldReturnCreatedTeam() {
+        var expected = new Team(UUID.randomUUID(), "expected name", LocalDateTime.now());
+        when(mockTeamRepository.save(new Team(null, "expected name", null))).thenReturn(expected);
+        var actual = service.createTeam("expected name", "User ID");
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
-    void createNewBoard_WithValidInformation_ReturnsSavedTeamUri() {
-        CreateTeamRequest requestedTeam = new CreateTeamRequest();
-        requestedTeam.setName("A name");
-        requestedTeam.setPassword("password");
-
-        when(passwordEncoder.encode("password")).thenReturn("encryptedPassword");
-        when(teamRepository.save(any(Team.class))).then(returnsFirstArg());
-        when(teamRepository.findTeamByUri("a-name")).thenReturn(Optional.empty());
-
-        Team actualTeam = teamService.createNewTeam(requestedTeam);
-
-        assertEquals("A name", actualTeam.getName());
-        assertEquals("a-name", actualTeam.getUri());
-        assertNotNull(actualTeam.getDateCreated());
-        assertEquals("encryptedPassword", actualTeam.getPassword());
+    void createTeam_WhenTeamAlreadyExists_ShouldThrowException() {
+        when(mockTeamRepository.save(new Team(null, "team already exists", null))).thenThrow(DataIntegrityViolationException.class);
+        assertThatExceptionOfType(TeamAlreadyExistsException.class).isThrownBy(() -> service.createTeam("team already exists", "user ID"));
     }
 
     @Test
-    void createNewBoard_WithValidInformation_trimsNameWhitespaceFromTeamName() {
-        CreateTeamRequest requestedTeam = new CreateTeamRequest();
-        requestedTeam.setName("   A name");
-        requestedTeam.setPassword("password");
-
-        when(passwordEncoder.encode("password")).thenReturn("encryptedPassword");
-        when(teamRepository.save(any(Team.class))).then(returnsFirstArg());
-        when(teamRepository.findTeamByUri("a-name")).thenReturn(Optional.empty());
-
-        Team actualTeam = teamService.createNewTeam(requestedTeam);
-
-        assertEquals("A name", actualTeam.getName());
-        assertEquals("a-name", actualTeam.getUri());
-        assertNotNull(actualTeam.getDateCreated());
-        assertEquals("encryptedPassword", actualTeam.getPassword());
+    void createTeam_ShouldAddCreatingUserToTeam() {
+        var expected = new Team(UUID.randomUUID(), "expected team name", LocalDateTime.now());
+        when(mockTeamRepository.save(new Team(null, "expected team name", null))).thenReturn(expected);
+        var actual = service.createTeam("expected team name", "User ID");
+        assertThat(actual).isEqualTo(expected);
+        verify(mockTeamUserMappingService).addUserToTeam(actual.getId(), "User ID");
     }
 
     @Test
-    void creatingTeamAlsoCreatesThreeColumns() {
-        when(teamRepository.save(any(Team.class))).then(returnsFirstArg());
-        when(teamRepository.findTeamByUri("beach-bums")).thenReturn(Optional.empty());
-
-        CreateTeamRequest requestedTeam = new CreateTeamRequest("beach-bums", "password");
-        teamService.createNewTeam(requestedTeam);
-
-        Column happyColumn = new Column(null, "happy", "Happy", "beach-bums");
-        Column confusedColumn = new Column(null, "confused", "Confused", "beach-bums");
-        Column unhappyColumn = new Column(null, "unhappy", "Sad", "beach-bums");
-
-        var inOrder = inOrder(columnRepository);
-        inOrder.verify(columnRepository, times(1)).save(happyColumn);
-        inOrder.verify(columnRepository, times(1)).save(confusedColumn);
-        inOrder.verify(columnRepository, times(1)).save(unhappyColumn);
+    void createTeam_GeneratesInitialColumns() {
+        var expectedTeam = new Team(UUID.randomUUID(), "expected team name", LocalDateTime.now());
+        when(mockTeamRepository.save(new Team(null, "expected team name", null))).thenReturn(expectedTeam);
+        service.createTeam("expected team name", "User ID");
+        verify(mockColumnService).generateInitialColumnsForTeam(expectedTeam.getId());
     }
 
     @Test
-    void getTeamByName_throwsBoardDoesNotExistExceptionWhenTeamDoesNotExist() {
-        when(teamRepository.findTeamByNameIgnoreCase("beach-bums")).thenReturn(Optional.empty());
-        assertThrows(
-                TeamDoesNotExistException.class,
-                () -> teamService.getTeamByName("beach-bums")
-        );
+    void getTeam_ReturnsOptionalFromRepository() {
+        var teamId = UUID.randomUUID();
+        var expected = Optional.of(new Team(teamId, "Team Name", LocalDateTime.now()));
+        when(mockTeamRepository.findById(teamId)).thenReturn(expected);
+
+        var actual = service.getTeam(teamId);
+
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
-    void getTeamByName_ReturnsTeam() {
-        Team expectedTeam = new Team();
-        String name = "expected-name";
-        expectedTeam.setName(name);
-        when(teamRepository.findTeamByNameIgnoreCase(name)).thenReturn(Optional.of(expectedTeam));
-
-        Team actualTeam = teamService.getTeamByName(name);
-
-        assertEquals(name, actualTeam.getName());
+    void addUser_WhenInviteDoesNotExistForTeam_ThrowsInviteNotFoundException() {
+        var teamId = UUID.randomUUID();
+        var inviteId = UUID.randomUUID();
+        when(mockInviteService.getInvite(teamId, inviteId)).thenReturn(Optional.empty());
+        assertThrows(InviteNotFoundException.class, () -> service.addUser(teamId, "User ID", inviteId));
     }
 
     @Test
-    void getTeamByName_trimsWhitespace() {
-        Team expectedTeam = new Team();
-        String name = "expected-name";
-        expectedTeam.setName(name);
-        when(teamRepository.findTeamByNameIgnoreCase(name)).thenReturn(Optional.of(expectedTeam));
-
-        Team actualTeam = teamService.getTeamByName("    "+name+"     ");
-
-        assertEquals(name, actualTeam.getName());
+    void addUser_WhenInviteOlderThanThreeHours_ThrowsInviteExpiredException() {
+        var teamId = UUID.randomUUID();
+        var inviteId = UUID.randomUUID();
+        when(mockInviteService.getInvite(teamId, inviteId)).thenReturn(Optional.of(new Invite(inviteId, teamId, LocalDateTime.of(1981, 10, 1, 0, 0))));
+        assertThrows(InviteExpiredException.class, () -> service.addUser(teamId, "User ID", inviteId));
     }
 
     @Test
-    void getTeamByUri_throwsBoardDoesNotExistExceptionWhenTeamDoesNotExist() {
-        when(teamRepository.findTeamByUri("beach-bums")).thenReturn(Optional.empty());
-        assertThrows(
-                TeamDoesNotExistException.class,
-                () -> teamService.getTeamByUri("beach-bums")
-        );
+    void addUser_WhenTeamDoesNotExist_ThrowsTeamNotFoundException() {
+        var teamId = UUID.randomUUID();
+        var inviteId = UUID.randomUUID();
+        when(mockInviteService.getInvite(teamId, inviteId)).thenReturn(Optional.of(new Invite(inviteId, teamId, LocalDateTime.now())));
+        service.addUser(teamId, "User ID", inviteId);
     }
 
     @Test
-    void getTeamByUri_ReturnsTeam() {
-        Team expectedTeam = new Team();
-        String uri = "expected-uri";
-        expectedTeam.setUri(uri);
-        when(teamRepository.findTeamByUri(uri)).thenReturn(Optional.of(expectedTeam));
+    void addUser_WithValidInvite_AddsUserTeamMappingForUserAndTeam() {
+        var teamId = UUID.randomUUID();
+        var inviteId = UUID.randomUUID();
+        when(mockInviteService.getInvite(teamId, inviteId)).thenReturn(Optional.of(new Invite(inviteId, teamId, LocalDateTime.now())));
+        service.addUser(teamId, "User ID", inviteId);
+        verify(mockTeamUserMappingService).addUserToTeam(teamId, "User ID");
+    }
 
-        Team actualTeam = teamService.getTeamByUri(uri);
-
-        assertEquals(uri, actualTeam.getUri());
+    @Test
+    void removeUser_CallsTeamUserMappingService() {
+        var teamId = UUID.randomUUID();
+        var userId = "User ID";
+        service.removeUser(teamId, userId);
+        verify(mockTeamUserMappingService).removeUserFromTeam(teamId, userId);
     }
 }

@@ -1,10 +1,10 @@
-package com.ford.labs.retroquest.team2;
+package com.ford.labs.retroquest.team;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ford.labs.retroquest.team2.exception.InviteExpiredException;
-import com.ford.labs.retroquest.team2.exception.InviteNotFoundException;
-import com.ford.labs.retroquest.team2.exception.TeamAlreadyExistsException;
-import com.ford.labs.retroquest.team2.exception.TeamNotFoundException;
+import com.ford.labs.retroquest.team.exception.InviteExpiredException;
+import com.ford.labs.retroquest.team.exception.InviteNotFoundException;
+import com.ford.labs.retroquest.team.exception.TeamAlreadyExistsException;
+import com.ford.labs.retroquest.team.exception.TeamNotFoundException;
 import com.ford.labs.retroquest.teamusermapping.TeamUserAuthorizationService;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
@@ -36,13 +36,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @SpringBootTest
-class TeamController2Test {
+class TeamControllerTest {
 
     @MockBean
     private JwtDecoder jwtDecoder;
 
     @MockBean
-    private TeamService2 service;
+    private TeamService service;
 
     @MockBean
     private TeamUserAuthorizationService authorizationService;

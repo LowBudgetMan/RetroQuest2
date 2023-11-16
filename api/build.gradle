@@ -63,12 +63,11 @@ dependencies {
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     implementation 'commons-io:commons-io:2.9.0'
     implementation 'io.jsonwebtoken:jjwt:0.9.1'
-    implementation 'io.micrometer:micrometer-registry-statsd'
     implementation 'org.apache.commons:commons-csv:1.8'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
     implementation 'org.apache.httpcomponents:httpclient:4.5.13'
-    implementation 'org.liquibase:liquibase-core:4.3.5'
-    implementation 'org.springdoc:springdoc-openapi-ui:1.5.9'
+    implementation 'org.liquibase:liquibase-core:4.8.0'
+    implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 //    implementation 'com.nimbusds:oauth2-oidc-sdk'
 
@@ -78,7 +77,7 @@ dependencies {
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
-    testImplementation 'com.h2database:h2:1.4.200'
+    testImplementation 'com.h2database:h2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 
@@ -148,7 +147,6 @@ task bootRunDockerDb(type: Exec) {
 
 test {
     useJUnitPlatform {
-        excludeTags 'api'
         maxParallelForks = (int) (Runtime.getRuntime().availableProcessors() / 2)
     }
 }

@@ -1,7 +1,7 @@
 package com.ford.labs.retroquest.teamusermapping;
 
-import com.ford.labs.retroquest.team2.Team;
-import com.ford.labs.retroquest.team2.TeamRepository2;
+import com.ford.labs.retroquest.team.Team;
+import com.ford.labs.retroquest.team.TeamRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,14 +19,14 @@ class TeamUserMappingRepositoryTest {
     private TeamUserMappingRepository subject;
 
     @Autowired
-    private TeamRepository2 teamRepository2;
+    private TeamRepository teamRepository;
 
     private Team savedTeam;
 
     @BeforeEach
     void setup() {
         subject.deleteAll();
-        this.savedTeam = teamRepository2.saveAndFlush(new Team("name"));
+        this.savedTeam = teamRepository.saveAndFlush(new Team("name"));
     }
 
     @Test

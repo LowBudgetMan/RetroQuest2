@@ -1,35 +1,20 @@
-/*
- * Copyright (c) 2022 Ford Motor Company
- * All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ford.labs.retroquest.team;
 
-import org.springframework.http.HttpHeaders;
+import com.ford.labs.retroquest.team.exception.InviteExpiredException;
+import com.ford.labs.retroquest.team.exception.InviteNotFoundException;
+import com.ford.labs.retroquest.team.exception.TeamAlreadyExistsException;
+import com.ford.labs.retroquest.team.exception.TeamNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.transaction.Transactional;
-import javax.validation.Valid;
-import java.net.URISyntaxException;
-
-import static org.springframework.http.HttpStatus.CREATED;
+import java.net.URI;
+import java.security.Principal;
+import java.util.UUID;
 
 @RestController
-@RequestMapping(value = "/api/team")
+@RequestMapping("/api/team2")
 public class TeamController {
 
     private final TeamService teamService;
@@ -39,26 +24,48 @@ public class TeamController {
     }
 
     @PostMapping
-    @Transactional(rollbackOn = URISyntaxException.class)
-    public ResponseEntity<String> createTeam(@RequestBody @Valid CreateTeamRequest createTeamRequest) {
-        var team = teamService.createNewTeam(createTeamRequest);
-        var teamId = team.getUri();
-
-        var headers = new HttpHeaders();
-        headers.add(HttpHeaders.LOCATION, teamId);
-
-        return new ResponseEntity<>(headers, CREATED);
+    public ResponseEntity<Void> createTeam(@RequestBody CreateTeamRequest createTeamRequest, Principal principal) {
+        var team = teamService.createTeam(createTeamRequest.name(), principal.getName());
+        return ResponseEntity.created(URI.create("/api/team/%s".formatted(team.getId()))).build();
     }
 
-    @GetMapping("/{teamId}")
-    @Transactional(rollbackOn = URISyntaxException.class)
-    @PreAuthorize("@teamAuthorization.requestIsAuthorized(authentication, #teamId)")
-    public ResponseEntity<Team> getTeam(@PathVariable("teamId") String teamId) {
-        return ResponseEntity.ok(teamService.getTeamByUri(teamId));
+    @GetMapping("{id}")
+    @PreAuthorize("@teamUserAuthorizationService.isUserMemberOfTeam(authentication, #teamId)")
+    public ResponseEntity<Team> getTeam(@PathVariable("id") UUID teamId) {
+        var possibleTeam = teamService.getTeam(teamId);
+        return possibleTeam.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/{teamId}/name")
-    public String getTeamName(@PathVariable("teamId") String teamUri) {
-        return teamService.getTeamByUri(teamUri).getName();
+    @PostMapping("/{id}/users")
+    public ResponseEntity<Void> addUser(@PathVariable("id") UUID teamId, @RequestBody AddUserToTeamRequest request, Principal principal) {
+        teamService.addUser(teamId, principal.getName(), request.inviteId());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}/users/{userId}")
+    @PreAuthorize("@teamUserAuthorizationService.isUserMemberOfTeam(authentication, #teamId)")
+    public ResponseEntity<Void> removeUser(@PathVariable("id") UUID teamId, @PathVariable("userId") String userId) {
+        teamService.removeUser(teamId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @ExceptionHandler(TeamAlreadyExistsException.class)
+    public ResponseEntity<Void> handleTeamAlreadyExists() {
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    }
+
+    @ExceptionHandler(TeamNotFoundException.class)
+    public ResponseEntity<Void> handleTeamNotFoundException() {
+        return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler(InviteNotFoundException.class)
+    public ResponseEntity<Void> handleInviteNotFoundException() {
+        return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler(InviteExpiredException.class)
+    public ResponseEntity<Void> handleInviteExpiredException() {
+        return ResponseEntity.badRequest().build();
     }
 }

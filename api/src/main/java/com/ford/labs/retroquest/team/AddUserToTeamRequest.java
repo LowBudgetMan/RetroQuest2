@@ -1,4 +1,4 @@
-package com.ford.labs.retroquest.team2;
+package com.ford.labs.retroquest.team;
 
 import java.util.UUID;
 
