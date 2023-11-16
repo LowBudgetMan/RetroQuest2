@@ -59,7 +59,7 @@ class TeamControllerTest {
         var teamName = "Team name";
         when(service.createTeam(teamName, "user")).thenReturn(new Team(teamId, teamName, LocalDateTime.now()));
 
-        mockMvc.perform(post("/api/team2")
+        mockMvc.perform(post("/api/team")
                         .with(jwt())
                         .content(objectMapper.writeValueAsString(new CreateTeamRequest(teamName)))
                         .contentType(MediaType.APPLICATION_JSON))
@@ -69,7 +69,7 @@ class TeamControllerTest {
 
     @Test
     void createTeam_WithInvalidToken_Throws401() throws Exception {
-        mockMvc.perform(post("/api/team2")
+        mockMvc.perform(post("/api/team")
                         .with(SecurityMockMvcRequestPostProcessors.anonymous())
                         .content(objectMapper.writeValueAsString(new CreateTeamRequest("Team name")))
                         .contentType(MediaType.APPLICATION_JSON))
@@ -80,7 +80,7 @@ class TeamControllerTest {
     void createTeam_WhenTeamAlreadyExists_Throws409() throws Exception {
         var teamName = "Team name";
         doThrow(TeamAlreadyExistsException.class).when(service).createTeam(teamName, "user");
-        mockMvc.perform(post("/api/team2")
+        mockMvc.perform(post("/api/team")
                         .with(jwt())
                         .content(objectMapper.writeValueAsString(new CreateTeamRequest(teamName)))
                         .contentType(MediaType.APPLICATION_JSON))
@@ -94,7 +94,7 @@ class TeamControllerTest {
         var authentication = createAuthentication();
         when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(true);
         when(service.getTeam(teamId)).thenReturn(Optional.of(team));
-        mockMvc.perform(get("/api/team2/%s".formatted(teamId))
+        mockMvc.perform(get("/api/team/%s".formatted(teamId))
                 .with(jwt()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(teamId.toString()))
@@ -104,7 +104,7 @@ class TeamControllerTest {
 
     @Test
     void getTeam_WhenInvalidToken_Returns401() throws Exception{
-        mockMvc.perform(get("/api/team2/%s".formatted(UUID.randomUUID()))
+        mockMvc.perform(get("/api/team/%s".formatted(UUID.randomUUID()))
                     .with(SecurityMockMvcRequestPostProcessors.anonymous()))
             .andExpect(status().isUnauthorized());
     }
@@ -114,7 +114,7 @@ class TeamControllerTest {
         var teamId = UUID.randomUUID();
         var authentication = createAuthentication();
         when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(false);
-        mockMvc.perform(get("/api/team2/%s".formatted(teamId))
+        mockMvc.perform(get("/api/team/%s".formatted(teamId))
                 .with(jwt()))
             .andExpect(status().isForbidden());
 
@@ -126,7 +126,7 @@ class TeamControllerTest {
         var authentication = createAuthentication();
         when(service.getTeam(teamId)).thenReturn(Optional.empty());
         when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(true);
-        mockMvc.perform(get("/api/team2/%s".formatted(teamId))
+        mockMvc.perform(get("/api/team/%s".formatted(teamId))
                     .with(jwt()))
             .andExpect(status().isNotFound());
     }
@@ -135,7 +135,7 @@ class TeamControllerTest {
     void addUser_WithGoodInvite_Returns200() throws Exception {
         var teamId = UUID.randomUUID();
         var inviteId = UUID.randomUUID();
-        mockMvc.perform(post("/api/team2/%s/users".formatted(teamId.toString()))
+        mockMvc.perform(post("/api/team/%s/users".formatted(teamId.toString()))
                         .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new AddUserToTeamRequest(inviteId))))
@@ -145,7 +145,7 @@ class TeamControllerTest {
 
     @Test
     void addUser_WithInvalidToken_Throws401() throws Exception {
-        mockMvc.perform(post("/api/team2/%s/users".formatted(UUID.randomUUID()))
+        mockMvc.perform(post("/api/team/%s/users".formatted(UUID.randomUUID()))
                         .with(SecurityMockMvcRequestPostProcessors.anonymous())
                         .content(objectMapper.writeValueAsString(new AddUserToTeamRequest(UUID.randomUUID())))
                         .contentType(MediaType.APPLICATION_JSON))
@@ -157,7 +157,7 @@ class TeamControllerTest {
         var teamId = UUID.randomUUID();
         var inviteId = UUID.randomUUID();
         doThrow(TeamNotFoundException.class).when(service).addUser(teamId, "user", inviteId);
-        mockMvc.perform(post("/api/team2/%s/users".formatted(teamId.toString()))
+        mockMvc.perform(post("/api/team/%s/users".formatted(teamId.toString()))
                         .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new AddUserToTeamRequest(inviteId))))
@@ -169,7 +169,7 @@ class TeamControllerTest {
         var teamId = UUID.randomUUID();
         var inviteId = UUID.randomUUID();
         doThrow(InviteNotFoundException.class).when(service).addUser(teamId, "user", inviteId);
-        mockMvc.perform(post("/api/team2/%s/users".formatted(teamId.toString()))
+        mockMvc.perform(post("/api/team/%s/users".formatted(teamId.toString()))
                         .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new AddUserToTeamRequest(inviteId))))
@@ -181,7 +181,7 @@ class TeamControllerTest {
         var teamId = UUID.randomUUID();
         var inviteId = UUID.randomUUID();
         doThrow(InviteExpiredException.class).when(service).addUser(teamId, "user", inviteId);
-        mockMvc.perform(post("/api/team2/%s/users".formatted(teamId.toString()))
+        mockMvc.perform(post("/api/team/%s/users".formatted(teamId.toString()))
                         .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new AddUserToTeamRequest(inviteId))))
@@ -195,7 +195,7 @@ class TeamControllerTest {
         var authentication = createAuthentication();
         when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(true);
 
-        mockMvc.perform(delete("/api/team2/%s/users/%s".formatted(teamId.toString(), userToRemoveId))
+        mockMvc.perform(delete("/api/team/%s/users/%s".formatted(teamId.toString(), userToRemoveId))
                 .with(jwt()))
             .andExpect(status().isOk());
         verify(service).removeUser(teamId, userToRemoveId);
@@ -205,7 +205,7 @@ class TeamControllerTest {
     void removeUser_WithInvalidToken_Throws401() throws Exception{
         var teamId = UUID.randomUUID();
         var userToRemoveId = "user2";
-        mockMvc.perform(delete("/api/team2/%s/users/%s".formatted(teamId.toString(), userToRemoveId))
+        mockMvc.perform(delete("/api/team/%s/users/%s".formatted(teamId.toString(), userToRemoveId))
                         .with(anonymous()))
                 .andExpect(status().isUnauthorized());
         verify(service, never()).removeUser(teamId, userToRemoveId);
@@ -218,7 +218,7 @@ class TeamControllerTest {
         var authentication = createAuthentication();
         when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(false);
 
-        mockMvc.perform(delete("/api/team2/%s/users/%s".formatted(teamId.toString(), userToRemoveId))
+        mockMvc.perform(delete("/api/team/%s/users/%s".formatted(teamId.toString(), userToRemoveId))
                         .with(jwt()))
                 .andExpect(status().isForbidden());
         verify(service, never()).removeUser(teamId, userToRemoveId);

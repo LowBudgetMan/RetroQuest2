@@ -51,7 +51,7 @@ class InviteControllerTest {
         var authentication = createAuthentication();
         when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(true);
         when(inviteService.createInvite(teamId)).thenReturn(new Invite(inviteId, teamId, LocalDateTime.now()));
-        mockMvc.perform(post("/api/team2/%s/invites".formatted(teamId.toString()))
+        mockMvc.perform(post("/api/team/%s/invites".formatted(teamId.toString()))
                 .with(jwt()))
             .andExpect(status().isCreated())
             .andExpect(header().string(HttpHeaders.LOCATION, "/api/team/%s/invites/%s".formatted(teamId.toString(), inviteId.toString())));
@@ -59,7 +59,7 @@ class InviteControllerTest {
 
     @Test
     void createInvite_WithInvalidToken_Throws401() throws Exception {
-        mockMvc.perform(post("/api/team2/%s/invites".formatted(UUID.randomUUID()))
+        mockMvc.perform(post("/api/team/%s/invites".formatted(UUID.randomUUID()))
                 .with(anonymous()))
             .andExpect(status().isUnauthorized());
     }
@@ -69,7 +69,7 @@ class InviteControllerTest {
         UUID teamId = UUID.randomUUID();
         var authentication = createAuthentication();
         when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(false);
-        mockMvc.perform(post("/api/team2/%s/invites".formatted(teamId))
+        mockMvc.perform(post("/api/team/%s/invites".formatted(teamId))
                 .with(jwt()))
             .andExpect(status().isForbidden());
     }
@@ -80,7 +80,7 @@ class InviteControllerTest {
         var authentication = createAuthentication();
         when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(true);
         doThrow(TeamNotFoundException.class).when(inviteService).createInvite(teamId);
-        mockMvc.perform(post("/api/team2/%s/invites".formatted(teamId))
+        mockMvc.perform(post("/api/team/%s/invites".formatted(teamId))
                         .with(jwt()))
                 .andExpect(status().isNotFound());
     }
@@ -92,7 +92,7 @@ class InviteControllerTest {
         var authentication = createAuthentication();
         when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(true);
         when(inviteService.createInvite(teamId)).thenReturn(new Invite(inviteId, teamId, LocalDateTime.now()));
-        mockMvc.perform(delete("/api/team2/%s/invites/%s".formatted(teamId.toString(), inviteId.toString()))
+        mockMvc.perform(delete("/api/team/%s/invites/%s".formatted(teamId.toString(), inviteId.toString()))
                         .with(jwt()))
                 .andExpect(status().isOk());
         verify(inviteService).deleteInvite(inviteId);
@@ -100,7 +100,7 @@ class InviteControllerTest {
 
     @Test
     void deleteInvite_WithInvalidToken_Throws401() throws Exception{
-        mockMvc.perform(delete("/api/team2/%s/invites/%s".formatted(UUID.randomUUID(), UUID.randomUUID()))
+        mockMvc.perform(delete("/api/team/%s/invites/%s".formatted(UUID.randomUUID(), UUID.randomUUID()))
                         .with(anonymous()))
                 .andExpect(status().isUnauthorized());
     }
@@ -110,7 +110,7 @@ class InviteControllerTest {
         UUID teamId = UUID.randomUUID();
         var authentication = createAuthentication();
         when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(false);
-        mockMvc.perform(delete("/api/team2/%s/invites/%s".formatted(teamId, UUID.randomUUID()))
+        mockMvc.perform(delete("/api/team/%s/invites/%s".formatted(teamId, UUID.randomUUID()))
                         .with(jwt()))
                 .andExpect(status().isForbidden());
     }

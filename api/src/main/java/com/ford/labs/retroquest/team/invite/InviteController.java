@@ -9,7 +9,7 @@ import java.net.URI;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/team2/{id}/invites")
+@RequestMapping("/api/team/{id}/invites")
 public class InviteController {
 
     private final InviteService inviteService;

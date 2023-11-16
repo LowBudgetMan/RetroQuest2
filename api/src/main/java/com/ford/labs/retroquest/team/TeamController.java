@@ -14,7 +14,7 @@ import java.security.Principal;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/team2")
+@RequestMapping("/api/team")
 public class TeamController {
 
     private final TeamService teamService;

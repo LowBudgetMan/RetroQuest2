@@ -52,7 +52,7 @@ public abstract class ApiTestBase {
     private int port;
 
     private String bearerAuthToken;
-
+    // TODO: Replace existing API tests with Controller Tests
     public String teamId;
 
     public String websocketUrl;
