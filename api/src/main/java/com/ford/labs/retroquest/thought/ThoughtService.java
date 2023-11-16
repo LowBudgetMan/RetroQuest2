@@ -36,10 +36,7 @@ public class ThoughtService {
     private final ColumnRepository columnRepository;
     private final WebsocketService websocketService;
 
-    public ThoughtService(ThoughtRepository thoughtRepository,
-                          ColumnRepository columnRepository,
-                          WebsocketService websocketService) {
-
+    public ThoughtService(ThoughtRepository thoughtRepository, ColumnRepository columnRepository, WebsocketService websocketService) {
         this.thoughtRepository = thoughtRepository;
         this.columnRepository = columnRepository;
         this.websocketService = websocketService;

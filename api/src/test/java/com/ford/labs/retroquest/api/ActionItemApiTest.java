@@ -37,6 +37,7 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -67,7 +68,7 @@ class ActionItemApiTest extends ApiTestBase {
         mockMvc.perform(post(BASE_API_URL)
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsBytes(sentActionItem))
-                .header("Authorization", getBearerAuthToken()))
+                        .with(jwt()))
                 .andExpect(status().isCreated());
 
 
@@ -84,7 +85,7 @@ class ActionItemApiTest extends ApiTestBase {
         actionItemRepository.saveAll(createdActionItems);
 
         mockMvc.perform(get(BASE_API_URL)
-            .header("Authorization", getBearerAuthToken()))
+                        .with(jwt()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(3))
             .andExpect(jsonPath("$.[0].task").value("Some Action"))
@@ -101,7 +102,7 @@ class ActionItemApiTest extends ApiTestBase {
         actionItemRepository.saveAll(createdActionItems);
 
         mockMvc.perform(get(BASE_API_URL + "?archived=true")
-                .header("Authorization", getBearerAuthToken()))
+                        .with(jwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$.[0].task").value("A Third Action"))
@@ -114,7 +115,7 @@ class ActionItemApiTest extends ApiTestBase {
         actionItemRepository.saveAll(createdActionItems);
 
         mockMvc.perform(get(BASE_API_URL + "?archived=false")
-                .header("Authorization", getBearerAuthToken()))
+                        .with(jwt()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$.[0].task").value("Some Action"))
@@ -132,7 +133,7 @@ class ActionItemApiTest extends ApiTestBase {
         mockMvc.perform(put(format(BASE_API_URL + "/%d/completed", savedActionItem.getId()))
             .content(objectMapper.writeValueAsBytes(request))
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getBearerAuthToken()))
+                        .with(jwt()))
             .andExpect(status().isOk());
 
         assertThat(actionItemRepository.count()).isEqualTo(1);
@@ -151,7 +152,7 @@ class ActionItemApiTest extends ApiTestBase {
             .build());
 
         mockMvc.perform(delete(format(BASE_API_URL + "/%d", actionItem1.getId()))
-            .header("Authorization", getBearerAuthToken()))
+                        .with(jwt()))
             .andExpect(status().isOk());
 
         var expectedItem = ActionItem.builder().id(actionItem1.getId()).build();
@@ -184,7 +185,7 @@ class ActionItemApiTest extends ApiTestBase {
         mockMvc.perform(delete(BASE_API_URL)
                         .content(objectMapper.writeValueAsBytes(request))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", getBearerAuthToken()))
+                        .with(jwt()))
                 .andExpect(status().isOk());
 
         var savedActionItems = actionItemRepository.findAll();
@@ -221,7 +222,7 @@ class ActionItemApiTest extends ApiTestBase {
         mockMvc.perform(put(format(BASE_API_URL + "/%d/task", expectedActionItem.getId()))
             .content(objectMapper.writeValueAsBytes(request))
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getBearerAuthToken()))
+                        .with(jwt()))
             .andExpect(status().isOk());
 
         assertThat(actionItemRepository.count()).isEqualTo(1);
@@ -243,7 +244,7 @@ class ActionItemApiTest extends ApiTestBase {
         mockMvc.perform(put(format(BASE_API_URL + "/%d/assignee", actionItem.getId()))
             .content(objectMapper.writeValueAsBytes(request))
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getBearerAuthToken()))
+                        .with(jwt()))
             .andExpect(status().isOk());
 
         assertThat(actionItemRepository.count()).isEqualTo(1);
@@ -264,7 +265,7 @@ class ActionItemApiTest extends ApiTestBase {
         mockMvc.perform(put(format(BASE_API_URL + "/%d/archived", actionItem.getId()))
             .content(objectMapper.writeValueAsBytes(request))
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", getBearerAuthToken()))
+                        .with(jwt()))
             .andExpect(status().isOk());
 
         assertThat(actionItemRepository.count()).isEqualTo(1);

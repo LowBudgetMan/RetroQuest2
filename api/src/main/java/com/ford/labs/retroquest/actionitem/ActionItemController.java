@@ -18,11 +18,6 @@
 package com.ford.labs.retroquest.actionitem;
 
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,15 +27,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static java.lang.String.format;
 
 @RestController
-@Tag(name = "Action Item Controller", description = "The controller that manages action items to a board given a team id")
-@ApiResponses(value = {
-        @ApiResponse(responseCode = "403", description = "Forbidden"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized")
-})
 public class ActionItemController {
 
     private final ActionItemService actionItemService;
@@ -50,91 +41,73 @@ public class ActionItemController {
     }
 
     @PostMapping("/api/team/{teamId}/action-item")
-    @PreAuthorize("@teamAuthorization.requestIsAuthorized(authentication, #teamId)")
-    @Operation(summary = "Creates an action item given a team id", description = "createActionItemForTeam")
-    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "Created")})
+    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
     public ResponseEntity<URI> createActionItemForTeam(
-            @PathVariable("teamId") String teamId,
+            @PathVariable("teamId") UUID teamId,
             @RequestBody CreateActionItemRequest request
     ) throws URISyntaxException {
-        var actionItem = actionItemService.createActionItem(teamId, request);
+        var actionItem = actionItemService.createActionItem(teamId.toString(), request);
         var actionItemUri = new URI(format("/api/team/%s/action-item/%d", teamId, actionItem.getId()));
         return ResponseEntity.created(actionItemUri).build();
     }
 
     @GetMapping("/api/team/{teamId}/action-item")
-    @PreAuthorize("@teamAuthorization.requestIsAuthorized(authentication, #teamId)")
-    @Operation(summary = "Retrieves all action items given a team id", description = "getActionItemsForTeam", parameters = {
-            @Parameter(name = "archived", description = "The archived status of the action items")
-    })
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK")})
-    public List<ActionItem> getActionItemsForTeam(@PathVariable("teamId") String teamId, @RequestParam(required = false) Boolean archived) {
-        return actionItemService.getActionItems(teamId, Optional.ofNullable(archived));
+    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
+    public List<ActionItem> getActionItemsForTeam(@PathVariable("teamId") UUID teamId, @RequestParam(required = false) Boolean archived) {
+        return actionItemService.getActionItems(teamId.toString(), Optional.ofNullable(archived));
     }
 
     @PutMapping("/api/team/{teamId}/action-item/{actionItemId}/completed")
-    @PreAuthorize("@teamAuthorization.requestIsAuthorized(authentication, #teamId)")
-    @Operation(summary = "Marks a thought as complete for a given team id", description = "completeActionItem")
-    @ApiResponses(value = {@ApiResponse(responseCode = "204", description = "No Content")})
+    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
     public void completeActionItem(
-            @PathVariable("teamId") String teamId,
+            @PathVariable("teamId") UUID teamId,
             @PathVariable("actionItemId") Long actionItemId,
             @RequestBody UpdateActionItemCompletedRequest request
     ) {
-        actionItemService.updateCompletedStatus(teamId, actionItemId, request);
+        actionItemService.updateCompletedStatus(teamId.toString(), actionItemId, request);
     }
 
     @PutMapping("/api/team/{teamId}/action-item/{actionItemId}/task")
-    @PreAuthorize("@teamAuthorization.requestIsAuthorized(authentication, #teamId)")
-    @Operation(summary = "Updates an action item given a thought id and a team id", description = "updateActionItemTask")
-    @ApiResponses(value = {@ApiResponse(responseCode = "204", description = "No Content")})
+    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
     public void updateActionItemTask(
-        @PathVariable("teamId") String teamId,
+        @PathVariable("teamId") UUID teamId,
         @PathVariable("actionItemId") Long actionItemId,
         @RequestBody UpdateActionItemTaskRequest request
     ) {
-        actionItemService.updateTask(teamId, actionItemId, request);
+        actionItemService.updateTask(teamId.toString(), actionItemId, request);
     }
 
     @PutMapping("/api/team/{teamId}/action-item/{actionItemId}/assignee")
-    @PreAuthorize("@teamAuthorization.requestIsAuthorized(authentication, #teamId)")
-    @Operation(summary = "Updates an action item assignee a thought id and a team id", description = "updateActionItemAssignee")
-    @ApiResponses(value = {@ApiResponse(responseCode = "204", description = "No Content")})
+    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
     public void updateActionItemAssignee(
-        @PathVariable("teamId") String teamId,
+        @PathVariable("teamId") UUID teamId,
         @PathVariable("actionItemId") Long actionItemId,
         @RequestBody UpdateActionItemAssigneeRequest request
     ) {
-        actionItemService.updateAssignee(teamId, actionItemId, request);
+        actionItemService.updateAssignee(teamId.toString(), actionItemId, request);
     }
 
     @PutMapping("/api/team/{teamId}/action-item/{actionItemId}/archived")
-    @PreAuthorize("@teamAuthorization.requestIsAuthorized(authentication, #teamId)")
-    @Operation(summary = "Updates an action item's archived status with a thought id and a team id", description = "updateActionItemArchivedStatus")
-    @ApiResponses(value = {@ApiResponse(responseCode = "204", description = "No Content")})
+    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
     public void updateActionItemArchivedStatus(
-            @PathVariable("teamId") String teamId,
+            @PathVariable("teamId") UUID teamId,
             @PathVariable("actionItemId") Long actionItemId,
             @RequestBody UpdateActionItemArchivedRequest request
     ) {
-        actionItemService.updateArchivedStatus(teamId, actionItemId, request);
+        actionItemService.updateArchivedStatus(teamId.toString(), actionItemId, request);
     }
 
     @Transactional
     @DeleteMapping("/api/team/{teamId}/action-item/{actionItemId}")
-    @PreAuthorize("@teamAuthorization.requestIsAuthorized(authentication, #teamId)")
-    @Operation(summary = "Deletes an action item given a team id and action item id", description = "deleteActionItem")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK")})
-    public void deleteActionItemByTeamIdAndId(@PathVariable("teamId") String teamId, @PathVariable("actionItemId") Long actionItemId) {
-        actionItemService.deleteOneActionItem(teamId, actionItemId);
+    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
+    public void deleteActionItemByTeamIdAndId(@PathVariable("teamId") UUID teamId, @PathVariable("actionItemId") Long actionItemId) {
+        actionItemService.deleteOneActionItem(teamId.toString(), actionItemId);
     }
 
     @Transactional
     @DeleteMapping("/api/team/{teamId}/action-item")
-    @PreAuthorize("@teamAuthorization.requestIsAuthorized(authentication, #teamId)")
-    @Operation(description = "Deletes multiple action items given a team id and action item ids")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK")})
-    public void deleteActionItemsByTeamIdAndIds(@PathVariable("teamId") String teamId, @RequestBody() DeleteActionItemsRequest request) {
-        actionItemService.deleteMultipleActionItems(teamId, request.actionItemIds());
+    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
+    public void deleteActionItemsByTeamIdAndIds(@PathVariable("teamId") UUID teamId, @RequestBody() DeleteActionItemsRequest request) {
+        actionItemService.deleteMultipleActionItems(teamId.toString(), request.actionItemIds());
     }
 }

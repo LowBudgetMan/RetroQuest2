@@ -17,16 +17,22 @@
 
 package com.ford.labs.retroquest.security;
 
-import io.jsonwebtoken.lang.Objects;
+import com.ford.labs.retroquest.teamusermapping.TeamUserAuthorizationService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
-public class TeamAuthorization {
+public class AuthorizationService {
 
-    public TeamAuthorization() {}
+    private final TeamUserAuthorizationService authorizationService;
 
-    public boolean requestIsAuthorized(Authentication authentication, String teamId) {
-        return Objects.nullSafeEquals(authentication.getPrincipal(), teamId);
+    public AuthorizationService(TeamUserAuthorizationService authorizationService) {
+        this.authorizationService = authorizationService;
+    }
+
+    public boolean requestIsAuthorized(Authentication authentication, UUID teamId) {
+        return authorizationService.isUserMemberOfTeam(authentication, teamId);
     }
 }
