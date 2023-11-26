@@ -25,6 +25,7 @@ import com.ford.labs.retroquest.websocket.events.WebsocketThoughtEvent;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.ford.labs.retroquest.websocket.events.WebsocketEventType.DELETE;
 import static com.ford.labs.retroquest.websocket.events.WebsocketEventType.UPDATE;
@@ -44,6 +45,10 @@ public class ThoughtService {
 
     public List<Thought> fetchAllActiveThoughts(String teamId) {
         return thoughtRepository.findAllByTeamIdAndBoardIdIsNull(teamId);
+    }
+
+    public Optional<Thought> getThought(Long thoughtId) {
+        return thoughtRepository.findById(thoughtId);
     }
 
     public Thought likeThought(String teamId, Long thoughtId) {

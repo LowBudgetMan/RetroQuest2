@@ -36,7 +36,7 @@ public class ThoughtController {
         this.thoughtService = thoughtService;
     }
 
-    @PostMapping("/api/team/{teamId}/thought")
+    @PostMapping("/api/team/{teamId}/thoughts")
     @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
     public ResponseEntity<Void> createThoughtForTeam(
             @PathVariable("teamId") UUID teamId,
@@ -54,14 +54,14 @@ public class ThoughtController {
     }
 
     @Transactional
-    @PutMapping("/api/team/{teamId}/thought/{thoughtId}/heart")
-    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
+    @PutMapping("/api/team/{teamId}/thoughts/{thoughtId}/heart")
+    @PreAuthorize("@thoughtAuthorizationService.requestIsAuthorized(authentication, #teamId, #thoughtId)")
     public void likeThought(@PathVariable("thoughtId") Long thoughtId, @PathVariable("teamId") UUID teamId) {
         thoughtService.likeThought(teamId.toString(), thoughtId);
     }
 
-    @PutMapping("/api/team/{teamId}/thought/{thoughtId}/discuss")
-    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
+    @PutMapping("/api/team/{teamId}/thoughts/{thoughtId}/discuss")
+    @PreAuthorize("@thoughtAuthorizationService.requestIsAuthorized(authentication, #teamId, #thoughtId)")
     public void discussThought(
         @PathVariable("thoughtId") Long thoughtId,
         @PathVariable("teamId") UUID teamId,
@@ -71,8 +71,8 @@ public class ThoughtController {
     }
 
     @Transactional
-    @PutMapping("/api/team/{teamId}/thought/{thoughtId}/column-id")
-    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
+    @PutMapping("/api/team/{teamId}/thoughts/{thoughtId}/column-id")
+    @PreAuthorize("@thoughtAuthorizationService.requestIsAuthorized(authentication, #teamId, #thoughtId)")
     public void moveThought(
         @PathVariable UUID teamId,
         @PathVariable Long thoughtId,
@@ -82,15 +82,16 @@ public class ThoughtController {
     }
 
     @Transactional
-    @PutMapping("/api/team/{teamId}/thought/{id}/message")
+    @PutMapping("/api/team/{teamId}/thoughts/{id}/message")
+    @PreAuthorize("@thoughtAuthorizationService.requestIsAuthorized(authentication, #teamId, #id)")
     public void updateThoughtMessage(@PathVariable("id") Long id, @RequestBody UpdateThoughtMessageRequest request,
                                      @PathVariable("teamId") UUID teamId) {
         thoughtService.updateThoughtMessage(teamId.toString(), id, request.message());
     }
 
     @Transactional
-    @DeleteMapping("/api/team/{teamId}/thought/{thoughtId}")
-    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
+    @DeleteMapping("/api/team/{teamId}/thoughts/{thoughtId}")
+    @PreAuthorize("@thoughtAuthorizationService.requestIsAuthorized(authentication, #teamId, #id)")
     public void clearIndividualThoughtForTeam(@PathVariable("teamId") UUID teamId, @PathVariable("thoughtId") Long id) {
         thoughtService.deleteThought(teamId.toString(), id);
     }

@@ -60,6 +60,13 @@ class ThoughtServiceTest {
     }
 
     @Test
+    void getThought_ReturnsOptionalFromRepository() {
+        var expectedThought = new Thought(1L, "Message", 0, false, "teamId", 10L, 100L);
+        when(thoughtRepository.findById(1L)).thenReturn(Optional.of(expectedThought));
+        assertThat(thoughtService.getThought(1L).orElseThrow()).isEqualTo(expectedThought);
+    }
+
+    @Test
     void likeThoughtShouldIncrementNumberOfLikesByOne() {
         var teamId = "the-team";
         long thoughtId = 1234L;
