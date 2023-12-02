@@ -17,8 +17,6 @@
 
 package com.ford.labs.retroquest.column;
 
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,7 +42,7 @@ public class ColumnController {
 
     @Transactional
     @PutMapping("/api/team/{teamId}/column/{columnId}/title")
-    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "OK") })
+    @PreAuthorize("@columnAuthorizationService.requestIsAuthorized(authentication, #teamId, #columnId)")
     public void updateTitleOfColumn(
         @PathVariable("teamId") UUID teamId,
         @RequestBody UpdateColumnTitleRequest request,

@@ -2,6 +2,7 @@ package com.ford.labs.retroquest.team;
 
 import com.ford.labs.retroquest.security.AuthorizationService;
 import com.ford.labs.retroquest.thought.Thought;
+import com.ford.labs.retroquest.thought.ThoughtAuthorizationService;
 import com.ford.labs.retroquest.thought.ThoughtService;
 import org.junit.jupiter.api.Test;
 

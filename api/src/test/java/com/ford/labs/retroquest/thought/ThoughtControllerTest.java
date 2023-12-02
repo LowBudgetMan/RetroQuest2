@@ -1,7 +1,6 @@
 package com.ford.labs.retroquest.thought;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ford.labs.retroquest.team.ThoughtAuthorizationService;
 import com.ford.labs.retroquest.teamusermapping.TeamUserAuthorizationService;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
@@ -149,7 +148,7 @@ class ThoughtControllerTest {
     }
 
     @Test
-    void getThoughts_WhenUserIsUnauthorized_Throws403() throws Exception {
+    void getThoughts_WhenUserIsNotOnTeam_Throws403() throws Exception {
         var teamId = UUID.randomUUID();
         var authentication = createAuthentication();
         when(authorizationService.isUserMemberOfTeam(authentication, teamId)).thenReturn(false);

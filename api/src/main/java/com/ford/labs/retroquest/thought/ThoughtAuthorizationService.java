@@ -1,7 +1,6 @@
-package com.ford.labs.retroquest.team;
+package com.ford.labs.retroquest.thought;
 
 import com.ford.labs.retroquest.security.AuthorizationService;
-import com.ford.labs.retroquest.thought.ThoughtService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
