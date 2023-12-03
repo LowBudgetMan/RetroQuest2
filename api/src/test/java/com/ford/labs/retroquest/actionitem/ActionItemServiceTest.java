@@ -17,11 +17,15 @@
 
 package com.ford.labs.retroquest.actionitem;
 
+import com.ford.labs.retroquest.exception.ActionItemDoesNotExistException;
 import com.ford.labs.retroquest.websocket.WebsocketService;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 class ActionItemServiceTest {
@@ -40,6 +44,20 @@ class ActionItemServiceTest {
         var expectedCompletedActionItem = ActionItem.builder().id(1L).teamId("The team").completed(true).archived(true).build();
         var otherExpectedCompletedActionItem = ActionItem.builder().id(2L).teamId("The team").completed(true).archived(true).build();
         verify(mockActionItemRepository).saveAll(List.of(expectedCompletedActionItem, otherExpectedCompletedActionItem));
+    }
+
+    @Test
+    void fetchActionItem_ReturnsActionItemFromRepository() {
+        var expectedActionItem = Optional.of(new ActionItem());
+        when(mockActionItemRepository.findByTeamIdAndId("teamId", 1L)).thenReturn(expectedActionItem);
+        var actual = actionItemService.fetchActionItem("teamId", 1L);
+        assertThat(actual).isEqualTo(expectedActionItem.get());
+    }
+
+    @Test
+    void fetchActionItem_WhenOptionalIsEmpty_ThrowsException() {
+        when(mockActionItemRepository.findByTeamIdAndId("teamId", 1L)).thenThrow(new ActionItemDoesNotExistException());
+        assertThatThrownBy(() -> actionItemService.fetchActionItem("teamId", 1L)).isInstanceOf(ActionItemDoesNotExistException.class);
     }
 
 }

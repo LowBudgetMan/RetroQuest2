@@ -1,6 +1,5 @@
 package com.ford.labs.retroquest.board;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ford.labs.retroquest.column.Column;
 import com.ford.labs.retroquest.teamusermapping.TeamUserAuthorizationService;
 import com.ford.labs.retroquest.thought.Thought;

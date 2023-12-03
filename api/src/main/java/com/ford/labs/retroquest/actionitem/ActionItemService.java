@@ -96,7 +96,7 @@ public class ActionItemService {
         actionItemRepository.saveAll(itemsToUpdate);
     }
 
-    private ActionItem fetchActionItem(String teamId, Long actionItemId) {
+    public ActionItem fetchActionItem(String teamId, Long actionItemId) {
         return actionItemRepository.findByTeamIdAndId(teamId, actionItemId).orElseThrow(ActionItemDoesNotExistException::new);
     }
 }

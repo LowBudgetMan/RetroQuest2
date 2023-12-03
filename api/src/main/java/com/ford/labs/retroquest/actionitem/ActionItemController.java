@@ -58,7 +58,7 @@ public class ActionItemController {
     }
 
     @PutMapping("/api/team/{teamId}/action-item/{actionItemId}/completed")
-    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
+    @PreAuthorize("@actionItemAuthorizationService.requestIsAuthorized(authentication, #teamId, #actionItemId)")
     public void completeActionItem(
             @PathVariable("teamId") UUID teamId,
             @PathVariable("actionItemId") Long actionItemId,
@@ -68,7 +68,7 @@ public class ActionItemController {
     }
 
     @PutMapping("/api/team/{teamId}/action-item/{actionItemId}/task")
-    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
+    @PreAuthorize("@actionItemAuthorizationService.requestIsAuthorized(authentication, #teamId, #actionItemId)")
     public void updateActionItemTask(
         @PathVariable("teamId") UUID teamId,
         @PathVariable("actionItemId") Long actionItemId,
@@ -78,7 +78,7 @@ public class ActionItemController {
     }
 
     @PutMapping("/api/team/{teamId}/action-item/{actionItemId}/assignee")
-    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
+    @PreAuthorize("@actionItemAuthorizationService.requestIsAuthorized(authentication, #teamId, #actionItemId)")
     public void updateActionItemAssignee(
         @PathVariable("teamId") UUID teamId,
         @PathVariable("actionItemId") Long actionItemId,
@@ -88,7 +88,7 @@ public class ActionItemController {
     }
 
     @PutMapping("/api/team/{teamId}/action-item/{actionItemId}/archived")
-    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
+    @PreAuthorize("@actionItemAuthorizationService.requestIsAuthorized(authentication, #teamId, #actionItemId)")
     public void updateActionItemArchivedStatus(
             @PathVariable("teamId") UUID teamId,
             @PathVariable("actionItemId") Long actionItemId,
@@ -99,7 +99,7 @@ public class ActionItemController {
 
     @Transactional
     @DeleteMapping("/api/team/{teamId}/action-item/{actionItemId}")
-    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
+    @PreAuthorize("@actionItemAuthorizationService.requestIsAuthorized(authentication, #teamId, #actionItemId)")
     public void deleteActionItemByTeamIdAndId(@PathVariable("teamId") UUID teamId, @PathVariable("actionItemId") Long actionItemId) {
         actionItemService.deleteOneActionItem(teamId.toString(), actionItemId);
     }
