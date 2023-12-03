@@ -91,23 +91,6 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="rkennel (generated)" id="1615067156888-6">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <tableExists tableName="team"/>
-            </not>
-        </preConditions>
-        <createTable tableName="team">
-            <column name="uri" type="VARCHAR(255)">
-                <constraints nullable="false" primaryKey="true"/>
-            </column>
-            <column name="name" type="VARCHAR(255)"/>
-            <column name="password" type="VARCHAR(255)"/>
-            <column defaultValueComputed="NULL" name="failed_attempts" type="INT"/>
-            <column defaultValueComputed="NULL" name="date_created" type="date"/>
-            <column defaultValueComputed="NULL" name="last_login_date" type="date"/>
-        </createTable>
-    </changeSet>
     <changeSet author="rkennel (generated)" id="1615067156888-7">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -216,61 +199,13 @@
         </preConditions>
         <renameTable oldTableName="column_title" newTableName="rq_column" />
     </changeSet>
-    <changeSet id="add_email_column_to_team_table" author="cshaugh1">
-        <preConditions>
-            <tableExists tableName="team" />
-        </preConditions>
-        <addColumn tableName="team">
-            <column name="email" type="VARCHAR(255)"/>
-        </addColumn>
-    </changeSet>
-    <changeSet id="add_password_reset_table" author="cshaugh1">
+    <changeSet id="add_team_table" author="lowbudgetman">
         <preConditions>
             <not>
-                <tableExists tableName="password_reset_token"/>
+                <tableExists tableName="team"/>
             </not>
         </preConditions>
-        <createTable tableName="password_reset_token">
-            <column name="reset_token" type="VARCHAR(255)">
-                <constraints nullable="false" primaryKey="true"/>
-            </column>
-            <column name="team_id" type="VARCHAR(255)">
-                <constraints nullable="false"/>
-            </column>
-            <column defaultValueComputed="NULL" name="date_created" type="datetime"/>
-        </createTable>
-    </changeSet>
-    <changeSet id="add_secondary_email_column_to_team_table" author="cshaugh1">
-        <preConditions>
-            <tableExists tableName="team" />
-        </preConditions>
-        <addColumn tableName="team">
-            <column name="secondary_email" type="VARCHAR(255)"/>
-        </addColumn>
-    </changeSet>
-    <changeSet id="add_email_reset_token_table" author="aclift19">
-        <preConditions>
-            <not>
-                <tableExists tableName="email_reset_token"/>
-            </not>
-        </preConditions>
-        <createTable tableName="email_reset_token">
-            <column name="reset_token" type="VARCHAR(255)">
-                <constraints nullable="false" primaryKey="true"/>
-            </column>
-            <column name="team_id" type="VARCHAR(255)">
-                <constraints nullable="false"/>
-            </column>
-            <column defaultValueComputed="NULL" name="date_created" type="datetime"/>
-        </createTable>
-    </changeSet>
-    <changeSet id="add_team2_table" author="lowbudgetman">
-        <preConditions>
-            <not>
-                <tableExists tableName="team2"/>
-            </not>
-        </preConditions>
-        <createTable tableName="team2">
+        <createTable tableName="team">
             <column name="id" type="uuid" autoIncrement="1">
                 <constraints nullable="false" primaryKey="true" />
             </column>
@@ -305,7 +240,7 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="team_id" type="uuid">
-                <constraints nullable="false" foreignKeyName="FK_TEAM_USER_MAPPING_TEAM" references="team2(id)" />
+                <constraints nullable="false" foreignKeyName="FK_TEAM_USER_MAPPING_TEAM" references="team(id)" />
             </column>
             <column name="user_id" type="VARCHAR(255)">
                 <constraints nullable="false"/>
@@ -329,7 +264,7 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="team_id" type="uuid">
-                <constraints nullable="false" foreignKeyName="FK_INVITE_TEAM" references="team2(id)" />
+                <constraints nullable="false" foreignKeyName="FK_INVITE_TEAM" references="team(id)" />
             </column>
             <column name="created_at" type="datetime">
                 <constraints nullable="false" />

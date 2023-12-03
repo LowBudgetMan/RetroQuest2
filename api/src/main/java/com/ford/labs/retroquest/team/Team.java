@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
-@Entity(name="team2")
+@Entity(name="team")
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
