@@ -58,13 +58,13 @@ public class BoardController {
     }
 
     @GetMapping("/team/{teamId}/boards/{boardId}")
-    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
+    @PreAuthorize("@boardAuthorizationService.requestIsAuthorized(authentication, #teamId, #boardId)")
     public Retro getBoard(@PathVariable("teamId") UUID teamId, @PathVariable("boardId") Long boardId) {
         return this.boardService.getArchivedRetroForTeam(teamId.toString(), boardId);
     }
 
     @DeleteMapping("/team/{teamId}/board/{boardId}")
-    @PreAuthorize("@authorizationService.requestIsAuthorized(authentication, #teamId)")
+    @PreAuthorize("@boardAuthorizationService.requestIsAuthorized(authentication, #teamId, #boardId)")
     public void deleteBoard(@PathVariable("teamId") UUID teamId, @PathVariable("boardId") Long boardId) {
         this.boardService.deleteBoard(teamId.toString(), boardId);
     }
